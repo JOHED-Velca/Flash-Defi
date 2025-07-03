@@ -1487,11 +1487,28 @@
       console.log('🔍 Current URL:', window.location.href);
       console.log('🔍 API Base URL:', window.location.origin + '/api/v1');
         
-        if (!token) {
-          console.log('❌ No token found, redirecting to login');
-          window.location.href = '/login.html';
-          return;
-        }
+      // BYPASS: Skip authentication check for demo mode
+      if (!token) {
+        console.log('⚠️ No token found, but creating demo session for bypass mode');
+        // Create a demo token and user for the session
+        const demoToken = 'demo_token_' + Date.now();
+        const demoUser = {
+          id: 1,
+          email: 'demo@flashsettle.com',
+          name: 'Demo User',
+          createdAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('flashsettle_token', demoToken);
+        localStorage.setItem('flashsettle_user', JSON.stringify(demoUser));
+        localStorage.setItem('flashsettle_auth_method', 'demo_bypass');
+        
+        console.log('✅ Demo session created');
+        
+        // Update the variables for the rest of the code
+        token = demoToken;
+        user = demoUser;
+      }
         
       // Load current account
       loadUserStats();
@@ -1589,23 +1606,28 @@
         console.log('💳 Authorization header:', `Bearer ${token}`);
         
         try {
-          const response = await fetch('/api/v1/payments', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              amount: parseFloat(amount),
-              sourceCurrency,
-              targetCurrency,
-              recipient
-            })
-          });
+          // BYPASS: Mock the payment API call
+          console.log('💳 [BYPASS] Simulating payment without backend');
           
-          const data = await response.json();
+          // Simulate API delay
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
-          if (response.ok && data.success) {
+          // Mock successful payment response
+          const mockResponse = {
+            success: true,
+            data: {
+              paymentId: 'PAY_' + Date.now(),
+              transactionHash: '0x' + Math.random().toString(16).substr(2, 64),
+              status: 'Completed'
+            }
+          };
+          
+          console.log('💳 [BYPASS] Mock payment response:', mockResponse);
+          
+          // Process as if it was a real API response
+          const data = mockResponse;
+          
+          if (data.success) {
             // Show success modal and update stats/transactions
             showSuccessModal({
               paymentId: data.data.paymentId,

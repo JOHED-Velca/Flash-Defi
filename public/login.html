@@ -577,41 +577,34 @@
                 loadingSpinner.style.display = 'inline-block';
                 hideMessages();
                 
+                // BYPASS: Skip backend authentication and go directly to dashboard
                 try {
-                    // Make API call to login
-                    const response = await fetch('/api/v1/auth/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ email, password })
-                    });
+                    // Store mock authentication data for frontend compatibility
+                    const mockToken = 'mock_jwt_token_' + Date.now();
+                    const mockUser = {
+                        id: 1,
+                        email: email || 'demo@flashsettle.com',
+                        name: 'Demo User',
+                        createdAt: new Date().toISOString()
+                    };
                     
-                    const data = await response.json();
+                    localStorage.setItem('flashsettle_token', mockToken);
+                    localStorage.setItem('flashsettle_user', JSON.stringify(mockUser));
+                    localStorage.setItem('flashsettle_auth_method', 'bypass');
                     
-                    if (response.ok && data.success) {
-                        // Store authentication data
-                        localStorage.setItem('flashsettle_token', data.data.accessToken);
-                        localStorage.setItem('flashsettle_user', JSON.stringify(data.data.user));
-                        localStorage.setItem('flashsettle_auth_method', 'traditional');
-                        
-                        // Debug: verify token is stored
-                        console.log('✅ Traditional login token stored:', data.data.accessToken);
-                        
-                        // Show success message
-                        successMessage.style.display = 'block';
-                        
-                        // Redirect after short delay
-                        setTimeout(() => {
-                            window.location.href = '/dashboard.html';
-                        }, 1500);
-                        
-                    } else {
-                        throw new Error(data.error || 'Login failed');
-                    }
+                    // Debug: verify token is stored
+                    console.log('✅ Bypass login token stored:', mockToken);
+                    
+                    // Show success message
+                    successMessage.style.display = 'block';
+                    
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1000);
                     
                 } catch (error) {
-                    console.error('Login error:', error);
+                    console.error('Login bypass error:', error);
                     errorMessage.style.display = 'block';
                     
                     // Reset form state
